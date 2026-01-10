@@ -1,3 +1,4 @@
+# File: render.yaml
 services:
   # Main Web Service
   - type: web
@@ -5,7 +6,9 @@ services:
     env: python
     region: frankfurt
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
     startCommand: gunicorn wsgi:app
     envVars:
       - key: DATABASE_URL
@@ -16,32 +19,28 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
+      - key: FLASK_APP
+        value: wsgi.py
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: WEBAPP_URL
-        value: https://updated-eight-ashy.vercel.app/
+        value: https://your-webapp-url.onrender.com
       - key: ADMIN_USERNAME
-        sync: false
+        value: admin
       - key: ADMIN_PASSWORD
-        sync: false
-      - key: CBE_ACCOUNT_NUMBER
-        value: "100348220032"
-      - key: CBE_ACCOUNT_NAME
-        value: "SAMSON MESFIN"
-      - key: TELEBIRR_PHONE
-        value: "0976233815"
-      - key: TELEBIRR_ACCOUNT_NAME
-        value: "NITSU"
+        generateValue: true
     healthCheckPath: /api/health
     autoDeploy: true
 
-  # Telegram Bot Worker
+  # Telegram Bot Worker (Optional - you can run separately)
   - type: worker
     name: addis-bingo-bot
     env: python
     region: frankfurt
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
     startCommand: python run_bot.py
     envVars:
       - key: DATABASE_URL
@@ -52,6 +51,4 @@ services:
         sync: false
       - key: FLASK_ENV
         value: production
-      - key: WEBAPP_URL
-        value: https://updated-eight-ashy.vercel.app/
-    autoDeploy: true
+    autoDeploy: false  # Set to true if you want bot auto-deployed
