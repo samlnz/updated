@@ -1,0 +1,30 @@
+# Core Dependencies
+aiogram==3.18.0
+aiohttp==3.11.13
+flask==3.1.0
+flask-sqlalchemy==3.1.1
+flask-wtf==1.2.2
+flask-login==0.6.3
+gunicorn==23.0.0
+sqlalchemy==2.0.38
+python-dotenv==1.0.1
+
+# PostgreSQL support
+psycopg2-binary==2.9.10
+
+# Redis support
+redis==5.0.7
+
+# Additional Utilities
+requests==2.32.3
+aiofiles==24.1.0
+celery==5.4.0
+
+# Date handling
+python-dateutil==2.9.0.post0
+
+# Phone number validation
+phonenumbers==8.13.31
+
+# Production
+greenlet>=3.0.0

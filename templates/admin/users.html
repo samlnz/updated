@@ -1,0 +1,552 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Users - Addis Bingo Admin{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<style>
+    .users-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e0e6ed;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-success {
+        background: #27ae60;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #219653;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .search-btn {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .search-btn:hover {
+        background: #2980b9;
+    }
+
+    .users-table {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+        color: white;
+    }
+
+    th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #eee;
+        transition: background 0.3s;
+    }
+
+    tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    td {
+        padding: 15px;
+        color: #333;
+    }
+
+    .user-avatar-table {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .user-info-table {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .user-id {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+
+    .action-btn {
+        padding: 5px 10px;
+        border-radius: 3px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s;
+    }
+
+    .action-btn.view {
+        background: #3498db;
+        color: white;
+    }
+
+    .action-btn.view:hover {
+        background: #2980b9;
+    }
+
+    .action-btn.edit {
+        background: #f39c12;
+        color: white;
+    }
+
+    .action-btn.edit:hover {
+        background: #e67e22;
+    }
+
+    .action-btn.delete {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .action-btn.delete:hover {
+        background: #c0392b;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 30px;
+        padding: 20px;
+    }
+
+    .page-link {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #3498db;
+        transition: all 0.3s;
+    }
+
+    .page-link:hover {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .page-link.active {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .page-link.disabled {
+        color: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .page-link.disabled:hover {
+        background: transparent;
+        color: #bdc3c7;
+        border-color: #ddd;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #7f8c8d;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #bdc3c7;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .stats-summary {
+        display: flex;
+        justify-content: space-between;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @media (max-width: 768px) {
+        .users-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .stats-summary {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="users-header">
+    <h2>All Users ({{ users|length }})</h2>
+    <div class="header-actions">
+        <a href="#" class="btn btn-primary" onclick="alert('Add user feature coming soon!')">
+            <i class="fas fa-user-plus"></i> Add New User
+        </a>
+        <a href="#" class="btn btn-success" onclick="alert('Export feature coming soon!')">
+            <i class="fas fa-download"></i> Export Users
+        </a>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="stats-summary">
+    <div class="stat-item">
+        <div class="stat-number">{{ users|length }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-item">
+        {% set total_balance = users|sum(attribute='balance') %}
+        <div class="stat-number">{{ "%.2f"|format(total_balance) }}</div>
+        <div class="stat-label">Total Balance</div>
+    </div>
+    <div class="stat-item">
+        {% set total_games_played = users|sum(attribute='games_played') %}
+        <div class="stat-number">{{ total_games_played }}</div>
+        <div class="stat-label">Games Played</div>
+    </div>
+    <div class="stat-item">
+        {% set total_games_won = users|sum(attribute='games_won') %}
+        <div class="stat-number">{{ total_games_won }}</div>
+        <div class="stat-label">Games Won</div>
+    </div>
+</div>
+
+<!-- Search Box -->
+<div class="search-box">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search by username, phone, or ID..." onkeyup="searchUsers()">
+    <button class="search-btn" onclick="searchUsers()">
+        <i class="fas fa-search"></i> Search
+    </button>
+    <button class="btn btn-secondary" onclick="resetSearch()">
+        <i class="fas fa-redo"></i> Reset
+    </button>
+</div>
+
+<!-- Users Table -->
+<div class="users-table">
+    {% if users %}
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Telegram ID</th>
+                    <th>Phone</th>
+                    <th>Balance</th>
+                    <th>Games</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersTable">
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="user-info-table">
+                            <div class="user-avatar-table">
+                                {{ user.username[:1]|upper if user.username else 'U' }}
+                            </div>
+                            <div class="user-details">
+                                <div class="user-name">
+                                    {% if user.username %}
+                                        {{ user.username }}
+                                    {% else %}
+                                        User #{{ user.id }}
+                                    {% endif %}
+                                </div>
+                                <div class="user-id">ID: {{ user.id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ user.telegram_id }}</td>
+                    <td>
+                        {% if user.phone %}
+                            {{ user.phone }}
+                        {% else %}
+                            <span style="color: #bdc3c7;">No phone</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong style="color: #27ae60;">{{ "%.2f"|format(user.balance) }} birr</strong>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <small>Played: {{ user.games_played }}</small>
+                            <small>Won: {{ user.games_won }}</small>
+                        </div>
+                    </td>
+                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if user.phone %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="action-btn view" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="action-btn edit" onclick="editUser({{ user.id }})" title="Edit User">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="action-btn delete" onclick="deleteUser({{ user.id }})" title="Delete User">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <a href="#" class="page-link disabled">&laquo; Previous</a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link">Next &raquo;</a>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>No Users Found</h3>
+            <p>There are no users registered in the system yet.</p>
+            <a href="#" class="btn btn-primary" style="margin-top: 15px;" onclick="alert('Add user feature coming soon!')">
+                <i class="fas fa-user-plus"></i> Add First User
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function searchUsers() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById('usersTable');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let found = false;
+        
+        for (let j = 0; j < cells.length; j++) {
+            const cell = cells[j];
+            if (cell) {
+                const text = cell.textContent || cell.innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        
+        rows[i].style.display = found ? '' : 'none';
+    }
+}
+
+function resetSearch() {
+    document.getElementById('searchInput').value = '';
+    searchUsers();
+}
+
+function editUser(userId) {
+    alert(`Edit user #${userId} - Feature coming soon!`);
+}
+
+function deleteUser(userId) {
+    if (confirm(`Are you sure you want to delete user #${userId}? This action cannot be undone.`)) {
+        alert(`Delete user #${userId} - Feature coming soon!\n\nIn production, this would make an API call to delete the user.`);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: addis_user
+      POSTGRES_PASSWORD: uwjFyG1IX9Qy7X15mmZazFLFw4DVpHy6
+      POSTGRES_DB: addis_bingo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://addis_user:uwjFyG1IX9Qy7X15mmZazFLFw4DVpHy6@postgres/addis_bingo
+      REDIS_URL: redis://redis:6379/0
+      TELEGRAM_BOT_TOKEN: 8502890042:AAG3OO2L-1g1GFz4MUcENizttUvZC1aHspM
+      WEBAPP_URL: https://updated-eight-ashy.vercel.app/
+    depends_on:
+      - postgres
+      - redis
+
+  bot:
+    build: .
+    command: python run_bot.py
+    environment:
+      DATABASE_URL: postgresql://addis_user:uwjFyG1IX9Qy7X15mmZazFLFw4DVpHy6@postgres/addis_bingo
+      REDIS_URL: redis://redis:6379/0
+      TELEGRAM_BOT_TOKEN: 8502890042:AAG3OO2L-1g1GFz4MUcENizttUvZC1aHspM
+      WEBAPP_URL: https://updated-eight-ashy.vercel.app/
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,468 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Addis Bingo Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-icon.users { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-icon.games { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stat-icon.money { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-icon.transactions { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .stat-icon.pending { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .stat-icon.active { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Charts Section */
+    .charts-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .chart-title {
+        font-size: 1.2rem;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .chart-placeholder {
+        height: 200px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #7f8c8d;
+    }
+
+    /* Recent Activity */
+    .recent-activity {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .activity-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .activity-title {
+        font-size: 1.2rem;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .view-all {
+        font-size: 0.9rem;
+        color: #3498db;
+        text-decoration: none;
+    }
+
+    .view-all:hover {
+        text-decoration: underline;
+    }
+
+    .activity-list {
+        list-style: none;
+    }
+
+    .activity-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-avatar-small {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .user-info-small {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .user-phone {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+
+    .activity-details {
+        text-align: right;
+    }
+
+    .activity-amount {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .activity-time {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-failed { background: #f8d7da; color: #721c24; }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .action-btn {
+        background: white;
+        border: 2px solid #3498db;
+        color: #3498db;
+        padding: 15px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #7f8c8d;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #bdc3c7;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .charts-section,
+        .recent-activity {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="stats-grid">
+    <!-- Users Card -->
+    <div class="stat-card">
+        <div class="stat-icon users">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+
+    <!-- Games Card -->
+    <div class="stat-card">
+        <div class="stat-icon games">
+            <i class="fas fa-gamepad"></i>
+        </div>
+        <div class="stat-value">{{ total_games }}</div>
+        <div class="stat-label">Total Games</div>
+        <div style="margin-top: 10px; font-size: 0.9rem; color: #3498db;">
+            {{ active_games }} active
+        </div>
+    </div>
+
+    <!-- Money Card -->
+    <div class="stat-card">
+        <div class="stat-icon money">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="stat-value">{{ "%.2f"|format(total_deposits) }}</div>
+        <div class="stat-label">Total Deposits</div>
+        <div style="margin-top: 10px; font-size: 0.9rem; color: #e74c3c;">
+            {{ "%.2f"|format(total_withdrawals) }} withdrawn
+        </div>
+    </div>
+
+    <!-- Transactions Card -->
+    <div class="stat-card">
+        <div class="stat-icon transactions">
+            <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="stat-value">{{ total_transactions }}</div>
+        <div class="stat-label">Transactions</div>
+    </div>
+
+    <!-- Pending Withdrawals Card -->
+    <div class="stat-card">
+        <div class="stat-icon pending">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-value">{{ pending_withdrawals }}</div>
+        <div class="stat-label">Pending Withdrawals</div>
+    </div>
+
+    <!-- Active Games Card -->
+    <div class="stat-card">
+        <div class="stat-icon active">
+            <i class="fas fa-play-circle"></i>
+        </div>
+        <div class="stat-value">{{ active_games }}</div>
+        <div class="stat-label">Active Games</div>
+    </div>
+</div>
+
+<div class="charts-section">
+    <!-- Revenue Chart -->
+    <div class="chart-card">
+        <div class="chart-title">Revenue Overview</div>
+        <div class="chart-placeholder">
+            <i class="fas fa-chart-line"></i> Chart will be displayed here
+        </div>
+    </div>
+
+    <!-- User Growth Chart -->
+    <div class="chart-card">
+        <div class="chart-title">User Growth</div>
+        <div class="chart-placeholder">
+            <i class="fas fa-chart-bar"></i> Chart will be displayed here
+        </div>
+    </div>
+</div>
+
+<div class="recent-activity">
+    <!-- Recent Transactions -->
+    <div class="activity-card">
+        <div class="activity-title">
+            Recent Transactions
+            <a href="{{ url_for('admin.transactions_list') }}" class="view-all">View All</a>
+        </div>
+        {% if recent_transactions %}
+            <ul class="activity-list">
+                {% for transaction in recent_transactions %}
+                <li class="activity-item">
+                    <div class="activity-user">
+                        <div class="user-avatar-small">
+                            {{ transaction.user.username[:1]|upper if transaction.user.username else 'U' }}
+                        </div>
+                        <div class="user-info-small">
+                            <span class="user-name">
+                                {% if transaction.user.username %}
+                                    {{ transaction.user.username }}
+                                {% else %}
+                                    User #{{ transaction.user.id }}
+                                {% endif %}
+                            </span>
+                            <span class="user-phone">{{ transaction.user.phone or 'No phone' }}</span>
+                        </div>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-amount">
+                            {% if transaction.amount > 0 %}
+                                +{{ "%.2f"|format(transaction.amount) }}
+                            {% else %}
+                                {{ "%.2f"|format(transaction.amount) }}
+                            {% endif %}
+                            <small>birr</small>
+                        </div>
+                        <div class="activity-time">
+                            {{ transaction.created_at.strftime('%H:%M') }}
+                        </div>
+                        <div class="status-badge status-{{ transaction.status }}">
+                            {{ transaction.status }}
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-exchange-alt"></i>
+                <p>No transactions yet</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Users -->
+    <div class="activity-card">
+        <div class="activity-title">
+            Recent Users
+            <a href="{{ url_for('admin.users_list') }}" class="view-all">View All</a>
+        </div>
+        {% if recent_users %}
+            <ul class="activity-list">
+                {% for user in recent_users %}
+                <li class="activity-item">
+                    <div class="activity-user">
+                        <div class="user-avatar-small">
+                            {{ user.username[:1]|upper if user.username else 'U' }}
+                        </div>
+                        <div class="user-info-small">
+                            <span class="user-name">
+                                {% if user.username %}
+                                    {{ user.username }}
+                                {% else %}
+                                    User #{{ user.id }}
+                                {% endif %}
+                            </span>
+                            <span class="user-phone">{{ user.phone or 'No phone' }}</span>
+                        </div>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-amount">
+                            {{ "%.2f"|format(user.balance) }} <small>birr</small>
+                        </div>
+                        <div class="activity-time">
+                            {{ user.created_at.strftime('%Y-%m-%d') }}
+                        </div>
+                        <div style="font-size: 0.85rem; color: #27ae60;">
+                            {{ user.games_played }} games
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-plus"></i>
+                <p>No users yet</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <a href="{{ url_for('admin.users_list') }}" class="action-btn">
+        <i class="fas fa-user-plus"></i> Add User
+    </a>
+    <a href="{{ url_for('admin.withdrawals_list') }}" class="action-btn">
+        <i class="fas fa-check-circle"></i> Process Withdrawals
+    </a>
+    <a href="{{ url_for('admin.transactions_list') }}" class="action-btn">
+        <i class="fas fa-search"></i> View All Transactions
+    </a>
+    <a href="#" class="action-btn" onclick="alert('Export feature coming soon!')">
+        <i class="fas fa-download"></i> Export Data
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+services:
+  # Main Web Service
+  - type: web
+    name: addis-bingo-web
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: addis_bingo
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: WEBAPP_URL
+        value: https://updated-eight-ashy.vercel.app/
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CBE_ACCOUNT_NUMBER
+        value: "100348220032"
+      - key: CBE_ACCOUNT_NAME
+        value: "SAMSON MESFIN"
+      - key: TELEBIRR_PHONE
+        value: "0976233815"
+      - key: TELEBIRR_ACCOUNT_NAME
+        value: "NITSU"
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # Telegram Bot Worker
+  - type: worker
+    name: addis-bingo-bot
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run_bot.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: addis_bingo
+          property: connectionString
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: FLASK_ENV
+        value: production
+      - key: WEBAPP_URL
+        value: https://updated-eight-ashy.vercel.app/
+    autoDeploy: true

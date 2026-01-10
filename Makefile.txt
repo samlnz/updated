@@ -1,0 +1,55 @@
+.PHONY: install run run-web run-bot migrate test clean backup deploy docker-build docker-up docker-down docker-logs reset-db
+
+install:
+	pip install -r requirements.txt
+
+run-web:
+	python run.py
+
+run-bot:
+	python run_bot.py
+
+migrate:
+	python migrate_db.py
+
+test:
+	python test_macrodroid.py
+
+clean:
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -delete
+	rm -rf .pytest_cache
+	rm -f instance/*.db
+
+backup:
+	python -c "from app.utils import backup_database; backup_database()"
+
+deploy:
+	git push heroku main
+
+docker-build:
+	docker-compose build
+
+docker-up:
+	docker-compose up -d
+
+docker-down:
+	docker-compose down
+
+docker-logs:
+	docker-compose logs -f
+
+reset-db:
+	python -c "from app import create_app; from app.models import db; app = create_app(); with app.app_context(): db.drop_all(); db.create_all()"
+
+setup:
+	pip install -r requirements.txt
+	python migrate_db.py
+	echo "✅ Setup complete! Run 'make run-web' and 'make run-bot' in separate terminals"
+
+info:
+	@echo "🎯 Addis Bingo Platform"
+	@echo "📱 Telegram Bot: 8502890042:AAG3OO2L-1g1GFz4MUcENizttUvZC1aHspM"
+	@echo "🌐 WebApp: https://updated-eight-ashy.vercel.app/"
+	@echo "💰 CBE: 100348220032 (SAMSON MESFIN)"
+	@echo "📱 Telebirr: 0976233815 (NITSU)"
