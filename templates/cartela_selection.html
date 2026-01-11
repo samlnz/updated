@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Cartela - Game {{ game_code }}</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        body {
+            background: #6c4e9e;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .cartela-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .cartela-number {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .cartela-number:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        .cartela-number.selected {
+            background: #28a745;
+            border-color: #20c997;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+        .cartela-number.unavailable {
+            background: rgba(255, 0, 0, 0.2);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .game-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn-join {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+            width: 200px;
+        }
+        .btn-join:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .btn-join:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .selected-info {
+            background: rgba(40, 167, 69, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="header text-center">
+            <h1>🎰 Addis Bingo</h1>
+            <h3>Select Your Cartela Number</h3>
+        </div>
+        
+        <div class="game-info">
+            <h4>Game: {{ game_code }}</h4>
+            <p>Entry Price: <strong>{{ entry_price }} Birr</strong></p>
+            <p>Choose a cartela number from 1 to 100</p>
+        </div>
+        
+        <div id="selected-info" class="selected-info" style="display: none;">
+            <h5>Selected Cartela: <span id="selected-number">0</span></h5>
+        </div>
+        
+        <div class="cartela-grid">
+            {% for i in range(1, 101) %}
+                <div class="cartela-number {% if i in used_numbers %}unavailable{% endif %}"
+                     id="cartela-{{ i }}"
+                     onclick="selectCartela({{ i }}, {{ i not in used_numbers }})">
+                    {{ i }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <button class="btn-join" id="join-btn" onclick="joinGame()" disabled>
+            Join Game
+        </button>
+    </div>
+
+    <script>
+        let selectedCartela = null;
+        
+        function selectCartela(number, available) {
+            if (!available) {
+                alert('This cartela number is already taken. Please choose another.');
+                return;
+            }
+            
+            // Deselect previous
+            if (selectedCartela) {
+                document.getElementById(`cartela-${selectedCartela}`).classList.remove('selected');
+            }
+            
+            // Select new
+            const element = document.getElementById(`cartela-${number}`);
+            element.classList.add('selected');
+            selectedCartela = number;
+            
+            // Update selected info
+            document.getElementById('selected-info').style.display = 'block';
+            document.getElementById('selected-number').textContent = number;
+            
+            // Enable join button
+            document.getElementById('join-btn').disabled = false;
+        }
+        
+        function joinGame() {
+            if (!selectedCartela) {
+                alert('Please select a cartela number first.');
+                return;
+            }
+            
+            // Show loading
+            const btn = document.getElementById('join-btn');
+            btn.innerHTML = 'Joining...';
+            btn.disabled = true;
+            
+            fetch(`/game/{{ game_id }}/join`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cartela_number: selectedCartela
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to game page
+                    window.location.href = `/game/{{ game_id }}`;
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to join game'));
+                    btn.innerHTML = 'Join Game';
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to join game. Please try again.');
+                btn.innerHTML = 'Join Game';
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

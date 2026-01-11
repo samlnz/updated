@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Addis Bingo - Lobby</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        body {
+            background: #6c4e9e;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px 20px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .price-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .price-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid transparent;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .price-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        .price-btn.active {
+            background: #28a745;
+            border-color: #20c997;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .game-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .btn-create {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            margin: 30px auto;
+        }
+        .btn-create:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .stats-bar {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ff6b00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="hero-section">
+            <h1>🎰 Addis Bingo</h1>
+            <p class="lead">Play Bingo with friends and win real money!</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="total-games">0</div>
+                <div>Total Games</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="active-games">0</div>
+                <div>Active Games</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-players">0</div>
+                <div>Players Online</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card bg-dark">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">🎮 Create New Game</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger d-none" id="error-alert"></div>
+                        
+                        <div class="mb-4">
+                            <h5>Select Entry Price:</h5>
+                            <div class="price-options">
+                                <button class="price-btn active" data-price="10">10 Birr</button>
+                                <button class="price-btn" data-price="20">20 Birr</button>
+                                <button class="price-btn" data-price="50">50 Birr</button>
+                                <button class="price-btn" data-price="100">100 Birr</button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-create" onclick="createGame()">
+                            🚀 Create Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card bg-dark">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">🎲 Available Games</h4>
+                        <button class="btn btn-sm btn-secondary" onclick="loadGames()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="games-list">
+                            <!-- Games will be loaded here -->
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading games...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <div class="alert alert-info">
+                <h5>💡 How to Play:</h5>
+                <ol class="text-start">
+                    <li>Select a game price and create/join a game</li>
+                    <li>Choose your cartela number (1-100)</li>
+                    <li>Mark numbers as they are called</li>
+                    <li>Complete a line, column, or diagonal to win!</li>
+                    <li>Center square is FREE and automatically marked</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPrice = 10;
+        let gamesData = [];
+        
+        // Price selection
+        document.querySelectorAll('.price-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.price-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                selectedPrice = parseInt(this.dataset.price);
+            });
+        });
+        
+        function createGame() {
+            const btn = document.querySelector('.btn-create');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = 'Creating...';
+            btn.disabled = true;
+            
+            fetch('/game/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    entry_price: selectedPrice
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to cartela selection
+                    window.location.href = `/game/${data.game_id}/select`;
+                } else {
+                    showError(data.error || 'Failed to create game');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Network error. Please try again.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+        
+        function loadGames() {
+            const gamesList = document.getElementById('games-list');
+            gamesList.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading games...</p>
+                </div>
+            `;
+            
+            // In a real app, you'd fetch from an API
+            setTimeout(() => {
+                renderGames([
+                    {
+                        id: 1,
+                        code: 'B1234',
+                        price: 10,
+                        players: 3,
+                        max_players: 100,
+                        status: 'waiting'
+                    },
+                    {
+                        id: 2,
+                        code: 'B5678',
+                        price: 20,
+                        players: 8,
+                        max_players: 100,
+                        status: 'waiting'
+                    },
+                    {
+                        id: 3,
+                        code: 'B9012',
+                        price: 50,
+                        players: 15,
+                        max_players: 100,
+                        status: 'active'
+                    }
+                ]);
+            }, 1000);
+        }
+        
+        function renderGames(games) {
+            const gamesList = document.getElementById('games-list');
+            
+            if (games.length === 0) {
+                gamesList.innerHTML = `
+                    <div class="text-center py-4">
+                        <p>No games available. Create the first one!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            games.forEach(game => {
+                const playerPercentage = (game.players / game.max_players) * 100;
+                
+                html += `
+                    <div class="game-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Game ${game.code}</h5>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-${game.status === 'active' ? 'success' : 'warning'} me-2">
+                                        ${game.status === 'active' ? 'Active' : 'Waiting'}
+                                    </span>
+                                    <span class="me-2">${game.price} Birr</span>
+                                    <span>👤 ${game.players}/${game.max_players}</span>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: ${playerPercentage}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-${game.status === 'active' ? 'success' : 'primary'}" 
+                                        onclick="joinGame(${game.id})">
+                                    ${game.status === 'active' ? 'Join' : 'Join'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            gamesList.innerHTML = html;
+            
+            // Update stats
+            updateStats(games);
+        }
+        
+        function updateStats(games) {
+            const totalGames = games.length;
+            const activeGames = games.filter(g => g.status === 'active').length;
+            const totalPlayers = games.reduce((sum, game) => sum + game.players, 0);
+            
+            document.getElementById('total-games').textContent = totalGames;
+            document.getElementById('active-games').textContent = activeGames;
+            document.getElementById('total-players').textContent = totalPlayers;
+        }
+        
+        function joinGame(gameId) {
+            window.location.href = `/game/${gameId}/select`;
+        }
+        
+        function showError(message) {
+            const alert = document.getElementById('error-alert');
+            alert.textContent = message;
+            alert.classList.remove('d-none');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                alert.classList.add('d-none');
+            }, 5000);
+        }
+        
+        // Load games on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGames();
+            
+            // Auto-refresh games every 30 seconds
+            setInterval(loadGames, 30000);
+        });
+    </script>
+</body>
+</html>
